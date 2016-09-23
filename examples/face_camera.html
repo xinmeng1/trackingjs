@@ -42,9 +42,28 @@
       tracker.setEdgesDensity(0.1);
 
       tracking.track('#video', tracker, { camera: true });
-
+      var detect_flag = 0;
+      var t;
       tracker.on('track', function(event) {
+
         context.clearRect(0, 0, canvas.width, canvas.height);
+
+
+        //according to test, the event.data will lose when tracking change, so cannot use this data to decide whether
+        // track or not, need to set a timer to decide
+        if(event.data.length!=0) {
+          if (detect_flag == 0){
+            console.log("Face detected!");
+            detect_flag = 1;
+            clearTimeout(t);
+          }
+        }else{
+          if (detect_flag == 1){
+            console.log("Face temporarily lost!");
+            t=setTimeout("alert('You face totally losted')",3000);
+            detect_flag = 0;
+          }
+        }
 
         event.data.forEach(function(rect) {
           context.strokeStyle = '#a64ceb';
@@ -56,6 +75,9 @@
         });
       });
 
+      var decide_face_lost = function () {
+        console.log("Face final lost!");
+      };
       var gui = new dat.GUI();
       gui.add(tracker, 'edgesDensity', 0.1, 0.5).step(0.01);
       gui.add(tracker, 'initialScale', 1.0, 10.0).step(0.1);
